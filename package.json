@@ -1,0 +1,23 @@
+{
+    "name": "bamazon",
+    "version": "1.0.0",
+    "description": "Bamazon",
+    "main": "bamazon.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/CParolini/Bamazon.git"
+    },
+    "author": "Chris Parolini",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/CParolini/Bamazon/issues"
+    },
+    "homepage": "https://github.com/CParolini/Bamazon#readme",
+    "dependencies": {
+        "inquirer": "^3.0.1",
+        "mysql": "^2.13.0"
+    }
+}
