@@ -4,78 +4,66 @@ var inquirer = require("inquirer");
 //variable that will hold our connection information
 var connection = mysql.createConnection({
     host: "localhost",
-    port: 3000,
-    // user: "me",
+    port: 3306,
+    user: "root",
     // password: "pw",
-    // database: "baa"
+    database: "bamazon"
 });
 
-connection.connect();
-
-//the display function is used to pull information from my sql table.
-
-var queryString = 'SELECT item_id, product_name, price, department_name, stock_quantity FROM products';
-console.log(queryString);
-
-connection.query(queryString, function(err, results) {
-    console.log("Here is a list of all merchandise available in our store!");
-    console.log("**********************************************************************");
-    //loop used to cycle through all items in my inventory
-    for (var i = 0; i < results.length; i++) {
-        //selected Items will be returned in the console.log
-        console.log("Product ID: " + results[i].item_id + "  Product Name: " + results[i].product_name + "  Price: $" + results[i].price + " Department: " + results[i].department_name + " Stock Quantity: " + results[i].stock_quantity);
-        console.log("**********************************************************************");
-
-    }
-    //Action function called which prompts user questions and takes order/updates inventory
-    Action();
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("connection success!");
+    display();
 });
 
-
-
-
-//Action function will prompt user questions and calculate inventory,etc.  detailed comments below
-var Action = function() {
-    //Prompts user questions
-    inquirer.prompt([{
-        name: "product",
-        type: "input",
-        message: "What is the ID of the product you would like to buy?"
-    }, {
-        name: "quantity",
-        type: "input",
-        message: "How many of this item do you want?"
-    }]).then(function(answer) {
-        //idChosen is set equal to answer.product
-        idChosen = answer.product;
-        //quantityChosen is set equal to answer.quantity
-        quantityChosen = answer.quantity;
-        //select product name, price, and stock quantity from the products table for the specific item the user types in
-        connection.query('SELECT product_name, price, stock_quantity FROM products WHERE item_id =' + idChosen,
-            function(error, results) {
-                //var newQuantity is set equal to the current inventory amount minus the quantity of item the user selects
-                var newQuantity = results[0].stock_quantity - quantityChosen;
-                //if quantity available is less than the user want to buy console.log that there isnt enough inventory
-                if (results[0].stock_quantity < quantityChosen) {
-                    console.log("There is not enough of this item to fulfill your order.");
-                } else {
-                    //if the amount of items is available to buy the products table will update the quantity to reflect your purchase
-                    connection.query("UPDATE products SET? WHERE?", [{
-                        stock_quantity: newQuantity
-                    }, {
-                        item_id: idChosen
-                    }], function(error, results) {});
-                    //console logs which will display the total of your order/quantity of items purchased/ and name of product purchased
-                    if (quantityChosen === "1") {
-                        console.log("Your total is: $" + results[0].price * quantityChosen + ". You have purchased a total of " + quantityChosen + " pair of " + results[0].product_name + "s");
-                    } else {
-                        console.log("Your total is: $" + results[0].price * quantityChosen + ". You have purchased a total of " + quantityChosen + " pair of " + results[0].product_name + "s");
-                    }
-
-                }
-            });
+var display = function() {
+    var queryString = 'SELECT item_id, product_name, price, department_name, stock_quantity FROM products';
+    connection.query(queryString, function(err, results) {
+        console.log("Merchandise List");
+        //loop used to cycle through all items in my inventory
+        for (var i = 0; i < results.length; i++) {
+            //selected Items will be returned in the console.log
+            console.log(results[i].item_id + " || " + results[i].product_name + " || " + results[i].price + " || " + results[i].department_name + " || " + results[i].stock_quantity + "\n");
+        }
+        prompt(results);
     });
 };
 
-//display function called to initialize app
-// display();
+var prompt = function(results) {
+    inquirer.prompt([{
+        type: 'input',
+        name: 'choice',
+        message: 'What item do you want to purchase? (Quit with Q)'
+    }]).then(function(answer) {
+        var correct = false;
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].product_name === answer.choice) {
+                correct = true;
+                var product = answer.choice;
+                var id = i;
+                inquirer.prompt({
+                    type: 'input',
+                    name: 'quant',
+                    message: 'How many do you want?',
+                    validate: function(value) {
+                        if (isNaN(value) === false) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }).then(function(answer) {
+                    if ((results[id].stock_quantity - answer.quant) > 0) {
+                        connection.query("UPDATE products SET stock_quantity='" + (res[id].stock_quantity - answer.quant) + "'Where product_name'" + product + "'", function(err, results2) {
+                            console.log('Product Bought');
+                            display();
+                        });
+                    } else {
+                        console.log("Not a valid selection");
+                        prompt(results);
+                    }
+                });
+            }
+        }
+    });
+};
