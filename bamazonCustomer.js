@@ -5,30 +5,31 @@ var inquirer = require("inquirer");
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3000,
-
-    // Your username
-    user: "root",
-
-    // Your password
-    password: "*********",
-    database: "baa"
+    // user: "me",
+    // password: "pw",
+    // database: "baa"
 });
-//the display function is used to pull information from my sql table.
-function display() {
-    connection.query('SELECT item_id, product_name, price, department_name, stock_quantity FROM products', function(error, results) {
-        console.log("Here is a list of all merchandise available in our store!");
-        console.log("**********************************************************************");
-        //loop used to cycle through all items in my inventory
-        for (var i = 0; i < results.length; i++) {
-            //selected Items will be returned in the console.log
-            console.log("Product ID: " + results[i].item_id + "  Product Name: " + results[i].product_name + "  Price: $" + results[i].price + " Department: " + results[i].department_name + " Stock Quantity: " + results[i].stock_quantity);
-            console.log("**********************************************************************");
 
-        }
-        //Action function called which prompts user questions and takes order/updates inventory
-        Action();
-    });
-};
+connection.connect();
+
+//the display function is used to pull information from my sql table.
+
+var queryString = 'SELECT item_id, product_name, price, department_name, stock_quantity FROM products';
+console.log(queryString);
+
+connection.query(queryString, function(err, results) {
+    console.log("Here is a list of all merchandise available in our store!");
+    console.log("**********************************************************************");
+    //loop used to cycle through all items in my inventory
+    for (var i = 0; i < results.length; i++) {
+        //selected Items will be returned in the console.log
+        console.log("Product ID: " + results[i].item_id + "  Product Name: " + results[i].product_name + "  Price: $" + results[i].price + " Department: " + results[i].department_name + " Stock Quantity: " + results[i].stock_quantity);
+        console.log("**********************************************************************");
+
+    }
+    //Action function called which prompts user questions and takes order/updates inventory
+    Action();
+});
 
 
 
@@ -56,7 +57,7 @@ var Action = function() {
                 var newQuantity = results[0].stock_quantity - quantityChosen;
                 //if quantity available is less than the user want to buy console.log that there isnt enough inventory
                 if (results[0].stock_quantity < quantityChosen) {
-                    console.log("There is not enough of this item to fulfill your order.")
+                    console.log("There is not enough of this item to fulfill your order.");
                 } else {
                     //if the amount of items is available to buy the products table will update the quantity to reflect your purchase
                     connection.query("UPDATE products SET? WHERE?", [{
@@ -74,7 +75,7 @@ var Action = function() {
                 }
             });
     });
-}
+};
 
 //display function called to initialize app
-display();
+// display();
